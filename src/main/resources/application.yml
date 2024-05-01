@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/batch_schema
+    username: root
+    password: root
+    hikari:
+      initialization-mode: always
+      minimum-idle: 0
+      maximum-pool-size: 5
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.MySQL8Dialect
+  batch:
+    initialize-schema: always
+    job:
+      enabled: true
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: ERROR
+    org.springframework.jdbc.core: DEBUG
+    org.springframework.transaction: INFO

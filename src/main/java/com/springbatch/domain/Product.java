@@ -1,7 +1,8 @@
 package com.springbatch.domain;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Pattern;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Pattern;
 
 public class Product {
 

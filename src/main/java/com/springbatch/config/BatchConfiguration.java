@@ -1,16 +1,18 @@
 package com.springbatch.config;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.sql.DataSource;
-
+import com.springbatch.domain.OSProduct;
+import com.springbatch.domain.Product;
+import com.springbatch.domain.ProductFieldSetMapper;
+import com.springbatch.domain.ProductRowMapper;
+import com.springbatch.processor.FilterProductItemProcessor;
+import com.springbatch.processor.MyProductItemProcessor;
+import com.springbatch.reader.ProductNameItemReader;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
@@ -26,31 +28,21 @@ import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
 import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.batch.item.validator.BeanValidatingItemProcessor;
-import org.springframework.batch.item.validator.ValidatingItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.transaction.PlatformTransactionManager;
 
-import com.springbatch.domain.OSProduct;
-import com.springbatch.domain.Product;
-import com.springbatch.domain.ProductFieldSetMapper;
-import com.springbatch.domain.ProductRowMapper;
-import com.springbatch.domain.ProductValidator;
-import com.springbatch.processor.FilterProductItemProcessor;
-import com.springbatch.processor.MyProductItemProcessor;
-import com.springbatch.reader.ProductNameItemReader;
+import javax.sql.DataSource;
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableBatchProcessing
 public class BatchConfiguration {
-	
-	@Autowired
-	public JobBuilderFactory jobBuilderFactory;
-	
-	@Autowired
-	public StepBuilderFactory stepBuilderFactory;
+
 	
 	@Autowired
 	public DataSource dataSource;
@@ -167,9 +159,9 @@ public class BatchConfiguration {
 	}
 	
 	@Bean
-	public Step step1() throws Exception {
-		return this.stepBuilderFactory.get("chunkBasedStep1")
-				.<Product,Product>chunk(3)
+	public Step step1(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) throws Exception {
+		return new StepBuilder("chunkBasedStep1", jobRepository)
+				.<Product,Product>chunk(3, platformTransactionManager)
 				.reader(jdbcPagingItemReader())
 				.processor(validateProductItemProcessor())
 				.writer(jdbcBatchItemWriter())
@@ -177,9 +169,9 @@ public class BatchConfiguration {
 	}
 	
 	@Bean
-	public Job firstJob() throws Exception {
-		return this.jobBuilderFactory.get("job1")
-				.start(step1())
+	public Job firstJob(JobRepository jobRepository, Step step1) {
+		return new JobBuilder("job1", jobRepository)
+				.start(step1)
 				.build();
 	}
 }
