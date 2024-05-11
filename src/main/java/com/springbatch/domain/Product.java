@@ -1,11 +1,17 @@
 package com.springbatch.domain;
 
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Pattern;
 
+@Entity
 public class Product {
 
+	@Id
+	@GeneratedValue
 	private Integer productId;
 	private String productName;
 	@Pattern(regexp = "Mobile Phones|Tablets|Televisions|Sports Accessories")
